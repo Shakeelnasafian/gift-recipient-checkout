@@ -1,0 +1,143 @@
+/**
+ * checkout.css — Recipient Checkout Fields
+ *
+ * Styles for the "This order is for someone else" section on the checkout page.
+ * Uses BEM-style class names prefixed with `rcf-` to avoid theme conflicts.
+ */
+
+/* ─── Outer card ─────────────────────────────────────────────────────────── */
+
+.rcf-gift-section {
+    margin: 0 0 24px;
+    padding: 20px 24px;
+    background: #faf9ff;
+    border: 1px solid #e0d9f5;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+/* ─── Toggle row ─────────────────────────────────────────────────────────── */
+
+.rcf-toggle-row {
+    display: flex;
+    align-items: center;
+}
+
+.rcf-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+    color: #3c3c3c;
+    margin: 0;
+    padding: 0;
+}
+
+/* Hide the real checkbox — replaced by the visual track */
+.rcf-toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+/* ─── Toggle switch track + thumb ────────────────────────────────────────── */
+
+.rcf-toggle-track {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    background: #ccc;
+    border-radius: 12px;
+    flex-shrink: 0;
+    transition: background 0.22s ease;
+    vertical-align: middle;
+}
+
+/* The round thumb */
+.rcf-toggle-track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    transition: transform 0.22s ease;
+}
+
+/* Checked state: slide thumb right and colour the track */
+.rcf-toggle-input:checked ~ .rcf-toggle-track {
+    background: #7f54b3; /* WooCommerce signature purple */
+}
+
+.rcf-toggle-input:checked ~ .rcf-toggle-track::after {
+    transform: translateX(20px);
+}
+
+/* Keyboard focus ring on the label */
+.rcf-toggle-input:focus-visible ~ .rcf-toggle-track {
+    outline: 2px solid #7f54b3;
+    outline-offset: 2px;
+}
+
+/* ─── Gift icon ──────────────────────────────────────────────────────────── */
+
+.rcf-toggle-icon {
+    display: inline-flex;
+    align-items: center;
+    color: #7f54b3;
+    flex-shrink: 0;
+}
+
+.rcf-toggle-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* ─── Animated reveal wrapper ────────────────────────────────────────────── */
+
+.rcf-fields-wrap {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    /* Collapse */
+    transition: max-height 0.35s ease, opacity 0.25s ease, margin-top 0.25s ease;
+    margin-top: 0;
+    will-change: max-height, opacity;
+}
+
+.rcf-fields-wrap.rcf-visible {
+    /* 400 px is comfortably larger than the two fields */
+    max-height: 400px;
+    opacity: 1;
+    margin-top: 20px;
+}
+
+/* Remove the default bottom margin on the last field row so the card
+   padding provides consistent spacing. */
+.rcf-fields-wrap .form-row:last-child {
+    margin-bottom: 0;
+}
+
+/* ─── Optional: subtle divider between toggle and fields ─────────────────── */
+
+.rcf-fields-wrap.rcf-visible {
+    padding-top: 16px;
+    border-top: 1px solid #e0d9f5;
+    margin-top: 16px;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+    .rcf-gift-section {
+        padding: 16px;
+    }
+}
