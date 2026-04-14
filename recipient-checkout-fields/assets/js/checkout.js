@@ -1,51 +1,73 @@
 /**
  * checkout.js — Recipient Checkout Fields
  *
- * Toggles the recipient name/email fields when the
- * "This order is for someone else" checkbox changes.
+ * Handles the show/hide toggle for the recipient name/email fields.
+ * Relies on CSS transitions defined in checkout.css for smooth animation.
  *
- * Depends on: jQuery (loaded by WooCommerce on the checkout page).
+ * No jQuery slide — uses CSS class toggling for better performance and
+ * respects the user's prefers-reduced-motion preference.
  */
-( function ( $ ) {
+( function () {
     'use strict';
 
-    var $checkbox = $( '#recipient_is_gift' );
-    var $fields   = $( '#rcf-recipient-fields' );
+    var checkbox = document.getElementById( 'recipient_is_gift' );
+    var fieldsWrap = document.getElementById( 'rcf-recipient-fields' );
+
+    if ( ! checkbox || ! fieldsWrap ) {
+        return; // Fields not present on this page load — nothing to do.
+    }
+
+    var inputs = fieldsWrap.querySelectorAll( 'input' );
 
     /**
-     * Show or hide the recipient fields with a smooth slide animation.
-     * Also toggle the HTML `required` attribute so browser-native validation
-     * only fires when the fields are actually visible.
+     * Sync the visible / accessible state of the recipient fields to the
+     * current checked value of the toggle checkbox.
      *
-     * @param {boolean} animate - Whether to use slideDown/Up (false on page load).
+     * @param {boolean} animate - If false, skip CSS transitions on first paint.
      */
-    function toggleFields( animate ) {
-        if ( $checkbox.is( ':checked' ) ) {
-            if ( animate ) {
-                $fields.slideDown( 300 );
-            } else {
-                $fields.show();
-            }
-            // Mark inputs as required so WooCommerce's inline validation notices
-            // are consistent with server-side validation.
-            $fields.find( 'input' ).prop( 'required', true );
+    function syncFields( animate ) {
+        var checked = checkbox.checked;
+
+        if ( ! animate ) {
+            // Disable transitions for the initial paint so there is no
+            // flash of animation on page load.
+            fieldsWrap.style.transition = 'none';
+        }
+
+        if ( checked ) {
+            fieldsWrap.classList.add( 'rcf-visible' );
+
+            // Require the hidden inputs only when they are actually visible,
+            // so the browser's native validation does not fire on hidden fields.
+            inputs.forEach( function ( input ) {
+                input.setAttribute( 'required', 'required' );
+            } );
         } else {
-            if ( animate ) {
-                $fields.slideUp( 300 );
-            } else {
-                $fields.hide();
-            }
-            // Remove required so the browser doesn't block submit when hidden.
-            $fields.find( 'input' ).prop( 'required', false );
+            fieldsWrap.classList.remove( 'rcf-visible' );
+
+            inputs.forEach( function ( input ) {
+                input.removeAttribute( 'required' );
+            } );
+        }
+
+        // Update ARIA so screen readers announce the expanded/collapsed state.
+        fieldsWrap.setAttribute( 'aria-hidden', checked ? 'false' : 'true' );
+
+        if ( ! animate ) {
+            // Re-enable transitions after a single paint cycle so subsequent
+            // toggles are animated.
+            // eslint-disable-next-line no-unused-expressions
+            fieldsWrap.offsetHeight; // force reflow
+            fieldsWrap.style.transition = '';
         }
     }
 
-    // On page load: set initial state without animation.
-    toggleFields( false );
+    // Set initial state without animation.
+    syncFields( false );
 
-    // On checkbox change: animate the transition.
-    $checkbox.on( 'change', function () {
-        toggleFields( true );
+    // Animate on every subsequent toggle.
+    checkbox.addEventListener( 'change', function () {
+        syncFields( true );
     } );
 
-} )( jQuery );
+} )();
